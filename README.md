@@ -36,4 +36,5 @@ I tried hard, but using an analogous approach that's used for RGB noise,
 all I could get were either all black or all grey images, nothing more.
 I suppose the problem could be that the DepthCamera hard-sets the current pass
 to the rendering system, so adding more compositors doesn't work very well.
+My work towards OpenGL is in the `opengl` branch of this repo.
 PRs welcome to fix this! 
