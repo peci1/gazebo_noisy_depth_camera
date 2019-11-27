@@ -1,0 +1,9 @@
+<library path="lib/libgazebo_noisy_depth_camera">
+  <class name="sensors/depth"
+         type="gazebo::sensors::NoisyDepthCameraSensor"
+         base_class_type="gazebo::sensors::Sensor">
+    <description> 
+      Gazebo sensor simulating a noisy depth camera.
+    </description>
+  </class>
+</library>
