@@ -1,0 +1,39 @@
+vertex_program Gazebo/GaussianDepthCameraNoiseVS glsl
+{
+  source camera_depth_noise_gaussian_vs.glsl
+}
+
+fragment_program Gazebo/GaussianDepthCameraNoiseFS glsl
+{
+  source camera_depth_noise_gaussian_fs.glsl
+  default_params
+  {
+    param_named RT int 0
+    param_named mean float 0.0
+    param_named stddev float 1.0
+    param_named offsets float3 0.0 0.0 0.0
+  }
+}
+
+material Gazebo/GaussianDepthCameraNoise
+{
+  technique
+  {
+    pass
+    {
+      vertex_program_ref Gazebo/GaussianDepthCameraNoiseVS { }
+      fragment_program_ref Gazebo/GaussianDepthCameraNoiseFS { }
+
+      depth_check off
+      depth_write off
+      lighting off
+
+      texture_unit RT
+      {
+        tex_coord_set 0
+        tex_address_mode clamp
+        filtering none
+      }
+    }
+  }
+}

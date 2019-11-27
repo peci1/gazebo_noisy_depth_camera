@@ -14,8 +14,10 @@
   <depend>gazebo_dev</depend>
 
   <exec_depend>gazebo_custom_sensor_preloader</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
 
   <export>
     <gazebo_custom_sensor_preloader plugin="${prefix}/sensors.xml" />
+    <gazebo_ros gazebo_media_path="${prefix}" />
   </export>
 </package>

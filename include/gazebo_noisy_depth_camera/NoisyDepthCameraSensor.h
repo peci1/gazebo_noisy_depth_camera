@@ -20,6 +20,10 @@ class GZ_SENSORS_VISIBLE NoisyDepthCameraSensor : public DepthCameraSensor
   public: void Load(const std::string &_worldName) override;
   public: void Init() override;
   public: virtual void Reset();
+  protected: void Fini() override;
+  protected: bool UpdateImpl(bool force) override;
+  public: std::string Topic() const override;
+  public: bool IsActive() const override;
 
   protected: virtual NoisePtr CreateNoiseModel(sdf::ElementPtr _sdf,
       const std::string &_sensorType);
