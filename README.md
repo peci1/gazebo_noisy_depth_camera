@@ -8,7 +8,7 @@ This plugin adds support for reading this noise tag and even allows for specifyi
 ## Implemented noise models
 
 - `gaussian`: The standard additive gaussian noise. Not very good for depth images.
-- `gaussian_multiplicative`: Multiplicative gaussian noise. A bit better for depth images.
+- `gaussian_multiplicative`: Multiplicative gaussian noise. A bit better for depth images. Be aware that as this is a multiplicative model, the "default" or "no-op" `mean` should be 1, not 0.
 
 ## Installation
 
