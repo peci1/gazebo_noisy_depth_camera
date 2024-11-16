@@ -1,3 +1,11 @@
+// HACK HACK HACK
+#include <any>
+#include <sstream>
+#define private public
+#include <gazebo/rendering/DepthCamera.hh>
+#undef private
+// HACK HACK HACK
+
 #include <gazebo_noisy_depth_camera/NoisyDepthCameraSensor.h>
 #include <gazebo_noisy_depth_camera/DepthImageGaussianNoiseModel.h>
 #include <gazebo_noisy_depth_camera/MultiplicativeGaussianNoiseModel.h>
@@ -8,6 +16,8 @@
 #include <gazebo/rendering/Scene.hh>
 
 #include <functional>
+
+#include "DepthCameraPrivate.hh"
 
 using gazebo::sensors::Sensor;
 using gazebo::sensors::SensorFactory;
@@ -70,26 +80,35 @@ void NoisyDepthCameraSensor::Init()
     {
       const auto nearClip = this->dataPtr->depthCamera->NearClip();
       const auto farClip = this->dataPtr->depthCamera->FarClip();
-      this->dataPtr->depthFrameConnection = this->DepthCamera()->ConnectNewDepthFrame(
-          [postRenderImageNoise,nearClip,farClip](const float* _buffer, size_t _width, size_t _height, size_t _depth, const std::string& _pixelFormat)
-          {
-            // HACK: there's no better way to alter the generated depth image than hooking the
-            // newDepthFrame callback which is passing a const pointer to the data.
-            // But we know (by construction of this sensor) that we'll be the first hook
-            // that gets called, and we also know that we can const_cast the passed data
-            // (because the underlying data structure is on the heap, which is always modifiable).
-            auto writableBuffer = const_cast<float*>(_buffer);
-            postRenderImageNoise->ApplyFloat(writableBuffer, _width, _height, _depth, _pixelFormat);
+      const auto depthFrameCb =
+        [postRenderImageNoise,nearClip,farClip](const float* _buffer, size_t _width, size_t _height, size_t _depth, const std::string& _pixelFormat)
+        {
+          // HACK: there's no better way to alter the generated depth image than hooking the
+          // newDepthFrame callback which is passing a const pointer to the data.
+          // Using the hack below, we'll know to be the first hook
+          // that gets called, and we also know that we can const_cast the passed data
+          // (because the underlying data structure is on the heap, which is always modifiable).
+          auto writableBuffer = const_cast<float*>(_buffer);
+          postRenderImageNoise->ApplyFloat(writableBuffer, _width, _height, _depth, _pixelFormat);
 
-            for (size_t i = 0; i < _width * _height * _depth; ++i)
-            {
-              if (writableBuffer[i] < nearClip)
-                writableBuffer[i] = -ignition::math::INF_F;
-              else if (writableBuffer[i] > farClip)
-                writableBuffer[i] = ignition::math::INF_F;
-            }
+          for (size_t i = 0; i < _width * _height * _depth; ++i)
+          {
+            if (writableBuffer[i] < nearClip)
+              writableBuffer[i] = -ignition::math::INF_F;
+            else if (writableBuffer[i] > farClip)
+              writableBuffer[i] = ignition::math::INF_F;
           }
-      );
+        };
+
+      // We need to be the first callback, so we'll hack into the newDepthFrame event and get the first place
+      // Using DepthCameraPrivate is fragile, but we hope that it won't change in the future. This corresponds
+      // to its version from Gazebo 11.15.0 (valid for all versions 11.* up to (at least) 11.15).
+      gazebo::rendering::DepthCameraPrivate* privData = this->DepthCamera()->dataPtr.get();
+      const auto index = privData->newDepthFrame.connections.empty() ?
+        0 : privData->newDepthFrame.connections.begin()->first - 1;
+      privData->newDepthFrame.connections[index] =
+        std::make_unique<decltype(privData->newDepthFrame)::EventConnection>(true, depthFrameCb);
+      this->dataPtr->depthFrameConnection.reset(new gazebo::event::Connection(&privData->newDepthFrame, index));
     }
   }
 
