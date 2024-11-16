@@ -2,8 +2,8 @@
 Changelog for package gazebo_noisy_depth_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2024-11-16)
+------------------
 * Fixed the order of registrations of depth frame callbacks so that this plugin actually changes the image for all other plugins.
   Fixes `#3 <https://github.com/peci1/gazebo_noisy_depth_camera/issues/3>`_ .
 * Noetic compatibility.
